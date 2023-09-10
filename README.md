@@ -1,10 +1,10 @@
 # llama_chat
-Llama2 chatbot running locally on M2 Mac
+Llama2 chatbot running locally on M2 Mac based on `Run Llama2 Locally`[^1].
 
 # Build llama.cpp
 
 ```sh
-#!/bin/bash
+#!/usr/bin/env zsh
 
 # Clone llama.cpp
 git clone https://github.com/ggerganov/llama.cpp.git
@@ -15,6 +15,9 @@ LLAMA_METAL=1 make
 ```
 
 # Download model
+
+The original instructions use the GGML[^2] model format but it has been deprecated in Llama.cpp in favor of GGUF[^3].
+
 ```sh
 export MODEL=llama-2-7b-chat.Q2_K.gguf
 if [ ! -f models/${MODEL} ]; then
@@ -25,12 +28,14 @@ fi
 
 # Setup the default prompt
 ```sh
-PROMPT="Hello! How are you?"
+export LLM_PROMPT="Hello! How are you?"
 ```
 
 # Run in interactive mode
 ```sh
-./main -m ./models/llama-2-13b-chat.ggmlv3.q4_0.bin \
+./main \
+  -m ./models/llama-2-13b-chat.ggmlv3.q4_0.bin \
+  -p "${LLM_PROMPT}" \
   --color \
   --ctx_size 2048 \
   -n -1 \
@@ -43,4 +48,6 @@ PROMPT="Hello! How are you?"
 
 # References
 
-* [Run Llama2 Locally](https://replicate.com/blog/run-llama-locally)
+[^1]: (https://replicate.com/blog/run-llama-locally)
+[^2]: https://github.com/ggerganov/ggml
+[^3]: https://github.com/philpax/ggml/blob/gguf-spec/docs/gguf.md
