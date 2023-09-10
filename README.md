@@ -46,8 +46,15 @@ export LLM_PROMPT="Hello! How are you?"
   -t 8
 ```
 
+# Further Reading
+
+Next try to using some of the prompts from Awesome ChatGPT Prompts[^4] or from FlowGPT[^5]
+or creating some of your own.
+
 # References
 
 [^1]: (https://replicate.com/blog/run-llama-locally)
 [^2]: https://github.com/ggerganov/ggml
 [^3]: https://github.com/philpax/ggml/blob/gguf-spec/docs/gguf.md
+[^4]: https://github.com/f/awesome-chatgpt-prompts
+[^5]: https://flowgpt.com
