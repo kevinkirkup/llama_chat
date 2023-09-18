@@ -56,7 +56,17 @@ any virtual environment that you wish.
 
 ## Create new Conda environment
 
-Create a new Anaconda virtual environment.
+First we want to create a new Anaconda development envrionment.
+
+### Install from `environment.yml`
+
+```sh
+$ export CMAKE_ARGS="-DLLAMA_METAL=on"
+$ conda create -n langchain -f environment.yml
+$ conda activate langchain
+```
+
+### Manual Install
 
 ```sh
 $ conda create -n langchain python=3.11
@@ -120,6 +130,18 @@ INFO:     Application startup complete.
 INFO:     Uvicorn running on http://localhost:8000 (Press CTRL+C to quit)
 ```
 
+### Using pyTorch with Metal support
+
+`pyTorch` natively supports offloading to the Metal GPU[^12].
+You can check by using the following python code:
+
+```python
+>>> import torch
+>>> torch.backends.mps.is_available()
+True
+```
+
+
 # Further Reading
 
 Next try to using some of the prompts from Awesome ChatGPT Prompts[^5] or from FlowGPT[^6]
@@ -138,3 +160,4 @@ or creating some of your own.
 [^9]: https://www.hopsworks.ai/dictionary/retrieval-augmented-generation-llm
 [^10]: https://anaconda.org
 [^11]: https://github.com/abetlen/llama-cpp-python/blob/main/docs/install/macos.md
+[^12]: https://pytorch.org/docs/master/notes/mps.html

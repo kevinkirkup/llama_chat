@@ -43,4 +43,3 @@ run: install ## Run the Llama_cpp HTTP Server
 	@python3 -m llama_cpp.server \
 		--model ${MODEL_DIR}/llama2/${ACTIVE_MODEL} \
 		--n_gpu_layers 100
-
