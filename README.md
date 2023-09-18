@@ -36,7 +36,7 @@ export LLM_PROMPT="Hello! How are you?"
 ## Run in interactive mode
 ```sh
 ./main \
-  -m ./models/llama-2-13b-chat.ggmlv3.q4_0.bin \
+  -m ./models/llama-2-13b-chat.ggufv3.q4_0.bin \
   -p "${LLM_PROMPT}" \
   --color \
   --ctx_size 2048 \
@@ -70,6 +70,8 @@ $ conda install -c pytorch pytorch=2.0.1 torchvision torchaudio
 $ conda install faiss langchain transformers accelerate einops
 ```
 
+If we are running on Mac M1/M2, we should make sure that we our pyTourch supports our Metal(`mps`) GPU[^8].
+
 Install conda helper packages
 
 ```sh
@@ -82,7 +84,41 @@ Install remaining pypi dependencies using pip.
 $ pip install bitsandbytes sentence_transformers
 ```
 
-If we are running on Mac M1/M2, we should make sure that we our pyTourch supports our Metal(`mps`) GPU[^8].
+### Installing `lama-cpp-python` with Metal GPU support[^11]
+
+Build the `llama-cpp-python` library with the `-DLLAMA_METAL=on` CMake Arugument
+
+```sh
+$ CMAKE_ARGS="-DLLAMA_METAL=on" pip install -U llama-cpp-python --no-cache-dir
+```
+
+We'll also install the server so we can run some tests:
+
+```sh
+$ pip install 'llama-cpp-python[server]'
+```
+
+Now we can run it with one of our local models.
+
+```sh
+$ export MODEL=[path to your llama.cpp gguf models]/[gguf-model-name].bin
+$ python3 -m llama_cpp.server --model $MODEL  --n_gpu_layers 1
+...
+ggml_metal_init: hasUnifiedMemory              = true
+ggml_metal_init: recommendedMaxWorkingSetSize  = 49152.00 MB
+ggml_metal_init: maxTransferRate               = built-in GPU
+llama_new_context_with_model: compute buffer total size =  169.47 MB
+llama_new_context_with_model: max tensor size =   102.54 MB
+ggml_metal_add_buffer: allocated 'data            ' buffer, size =  3891.95 MB, ( 3892.45 / 49152.00)
+ggml_metal_add_buffer: allocated 'eval            ' buffer, size =     1.48 MB, ( 3893.94 / 49152.00)
+ggml_metal_add_buffer: allocated 'kv              ' buffer, size =  1026.00 MB, ( 4919.94 / 49152.00)
+ggml_metal_add_buffer: allocated 'alloc           ' buffer, size =   168.02 MB, ( 5087.95 / 49152.00)
+AVX = 0 | AVX2 = 0 | AVX512 = 0 | AVX512_VBMI = 0 | AVX512_VNNI = 0 | FMA = 0 | NEON = 1 | ARM_FMA = 1 | F16C = 0 | FP16_VA = 0 | WASM_SIMD = 0 | BLAS = 1 | SSE3 = 0 | SSSE3 = 0 | VSX = 0 | 
+INFO:     Started server process [22500]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://localhost:8000 (Press CTRL+C to quit)
+```
 
 # Further Reading
 
@@ -101,3 +137,4 @@ or creating some of your own.
 [^8]: https://developer.apple.com/metal/pytorch/
 [^9]: https://www.hopsworks.ai/dictionary/retrieval-augmented-generation-llm
 [^10]: https://anaconda.org
+[^11]: https://github.com/abetlen/llama-cpp-python/blob/main/docs/install/macos.md
