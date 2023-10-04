@@ -1,14 +1,16 @@
 ##################################################
-# Llama.cpp files
+# Set line endings to OSX
 ##################################################
-main.*.log
+* text eol=lf
 
 ##################################################
-# Jupyter Notebook
+# Jupyter Notebook Settings
 ##################################################
-.ipynb_checkpoints
+*.ipynb binary
 
 ##################################################
-# Local configuration
+# Treat these files as binary
 ##################################################
-envsetup.sh
+.terraform.lock.hcl -diff
+*.png binary
+*.tiff binary
