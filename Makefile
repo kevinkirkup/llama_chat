@@ -4,10 +4,12 @@ include MakefileHelp.mk
 ## └──────────────────────────────────────────────────────────────────────────────┘
 
 # Current Build Vars
-REPO?=TheBloke/Llama-2-7b-Chat-GGUF
-MODELS?=llama-2-7b-chat.Q4_K_M.gguf \
-				llama-2-7b-chat.Q5_K_M.gguf
-ACTIVE_MODEL?=llama-2-7b-chat.Q5_K_M.gguf
+PARAMETERS?=70b
+REPO?=TheBloke/Llama-2-$(PARAMETERS)-Chat-GGUF
+MODELS?=llama-2-$(PARAMETERS)-chat.Q4_K_M.gguf \
+				llama-2-$(PARAMETERS)-chat.Q5_K_M.gguf
+
+ACTIVE_MODEL?=llama-2-$(PARAMETERS)-chat.Q5_K_M.gguf
 LLAMA2_CPP_DIR?=../llama.cpp
 LLM_PROMPT?=""
 
