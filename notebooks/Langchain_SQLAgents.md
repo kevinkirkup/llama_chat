@@ -15,11 +15,9 @@ jupyter:
 
 # Langchain Agent testing
 
-
 ## Setup
 
-
-### Initialize Imports
+### Initial Imports
 
 ```python
 import asyncio
@@ -34,6 +32,7 @@ from langchain.chains import LLMChain
 from langchain.llms import LlamaCpp
 
 model_path = os.path.expanduser("~/ai/models/llama2/llama-2-70b-chat.Q5_K_M.gguf")
+# model_path = os.path.expanduser("~/ai/models/sqlcoder/sqlcoder.Q5_K_M.gguf")
 model = LlamaCpp(
     model_path=model_path,
     n_gpu_layers=1,
@@ -46,9 +45,10 @@ model = LlamaCpp(
 )
 ```
 
+### Initialize the SQL Coder model
+
 ```python
 sql_model_path = os.path.expanduser("~/ai/models/sqlcoder/sqlcoder.Q5_K_M.gguf")
-#sql_model_path = os.path.expanduser("~/ai/models/sqlcoder/sqlcoder.Q5_K_M.gguf")
 sql_model = LlamaCpp(
     model_path=sql_model_path,
     n_gpu_layers=1,
@@ -61,30 +61,48 @@ sql_model = LlamaCpp(
 )
 ```
 
-### Create an agent to fetch the users in the database
+### Create a connection to the SQL Database
+
+```python
+from langchain.sql_database import SQLDatabase
+
+db = SQLDatabase.from_uri(
+    "postgresql://mercury:m3ssenger@localhost:5432/mercury_dev",
+    include_tables=[
+        'users',
+        'roles',
+        'roles_users',
+        'orgs',
+        'ports',
+        'port_groups',
+        'virtual_routers',
+        'links',
+        'connections'
+    ],
+    sample_rows_in_table_info=3,
+)
+
+```
+
+### Create The SQL Toolkit we'll use with our Agent
 
 ```python
 from langchain.agents import create_sql_agent
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
-from langchain.sql_database import SQLDatabase
 from langchain.agents.agent_types import AgentType
 
-db = SQLDatabase.from_uri(
-    "postgresql://mercury:m3ssenger@localhost:5432/mercury_dev",
-    include_tables=['users', 'roles', 'roles_users', 'orgs', 'ports', 'port_groups', 'virtual_routers', 'links', 'connections'],
-    sample_rows_in_table_info=3,
-)
 toolkit = SQLDatabaseToolkit(
     db=db,
     llm=sql_model,
     verbose=True
 )
+
 agent_executor = create_sql_agent(
     llm=model,
     toolkit=toolkit,
     verbose=True,
     agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-    handle_parsing_errors=True,
+    handle_parsing_errors=True
 )
 
 ```
