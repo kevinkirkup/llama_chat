@@ -32,7 +32,6 @@ from langchain.chains import LLMChain
 from langchain.llms import LlamaCpp
 
 model_path = os.path.expanduser("~/ai/models/llama2/llama-2-70b-chat.Q5_K_M.gguf")
-# model_path = os.path.expanduser("~/ai/models/sqlcoder/sqlcoder.Q5_K_M.gguf")
 model = LlamaCpp(
     model_path=model_path,
     n_gpu_layers=1,
@@ -48,7 +47,7 @@ model = LlamaCpp(
 ### Initialize the SQL Coder model
 
 ```python
-sql_model_path = os.path.expanduser("~/ai/models/sqlcoder/sqlcoder.Q5_K_M.gguf")
+sql_model_path = os.path.expanduser("~/ai/models/llama2/llama-2-7b-chat.Q5_K_M.gguf")
 sql_model = LlamaCpp(
     model_path=sql_model_path,
     n_gpu_layers=1,
@@ -87,6 +86,8 @@ db = SQLDatabase.from_uri(
 ### Create The SQL Toolkit we'll use with our Agent
 
 ```python
+from textwrap import dedent
+
 from langchain.agents import create_sql_agent
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
 from langchain.agents.agent_types import AgentType
@@ -97,9 +98,34 @@ toolkit = SQLDatabaseToolkit(
     verbose=True
 )
 
+prefix = dedent('''
+    <<SYS>>
+    You are an agent designed to interact with a SQL database.
+    Given an input question, create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
+    Unless the user specifies a specific number of examples they wish to obtain, always limit your query to at most {top_k} results.
+    You can order the results by a relevant column to return the most interesting examples in the database.
+    Never query for all the columns from a specific table, only ask for the relevant columns given the question.
+    You have access to tools for interacting with the database.
+    Only use the below tools. Only use the information returned by the below tools to construct your final answer.
+     
+    For SQL queries, ALWAYS use the available tools in this order:
+     1. sql_db_list_tables
+     2. sql_db_schema
+     3. sql_db_query_checker
+     4. sql_db_query
+     
+    You MUST double check your query before executing it. If you get an error while executing a query, rewrite the query and try again.
+    
+    DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
+    
+    If the question does not seem related to the database, just return "I don\'t know" as the answer.
+
+    <</SYS>>''').strip()
+
 agent_executor = create_sql_agent(
     llm=model,
     toolkit=toolkit,
+    prefix=prefix,
     verbose=True,
     agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
     handle_parsing_errors=True
@@ -114,25 +140,6 @@ template = PromptTemplate(
     input_variables=["question"],
     template="""
     [INST]
-    <<SYS>>
-    You are an assistant tasked with querying an Postgresql database for information.
-    Given an input question, first create a syntactically correct postgresql query to run,  
-    then look at the results of the query and return the answer.
-    Only return the requested information from the database.
-    
-    The valid SQL query tools are:
-     1. sql_db_list_tables
-     2. sql_db_schema
-     3. sql_db_query_checker
-     4. sql_db_query
-     
-    For SQL queries, ALWAYS use the available tools in this order:
-     1. sql_db_list_tables
-     2. sql_db_schema
-     3. sql_db_query_checker
-     4. sql_db_query
-    <</SYS>>
-    
     {question}
     [/INST]
     """,
