@@ -38,9 +38,11 @@ model = LlamaCpp(
     n_batch=512,
     n_ctx=2048,
     f16_kv=True,
-    temporature=0,
-    n_gqa=8,
-    verbose=True
+    temperature=0,
+    verbose=True,
+    model_kwargs={
+        "n_gqa": 8,
+    },
 )
 ```
 
@@ -54,9 +56,11 @@ sql_model = LlamaCpp(
     n_batch=512,
     n_ctx=2048,
     f16_kv=True,
-    temporature=0,
-    n_gqa=8,
-    verbose=True
+    temperature=0,
+    verbose=True,
+    model_kwargs={
+        "n_gqa": 8,
+    },
 )
 ```
 

@@ -14,10 +14,12 @@ jupyter:
 ---
 
 # LlamaIndex for querying SQL
+
 In this notebook, we'll trying using LlamaIndex for generating indices for an SQL Database and compare it's performance against LangChains SQLAgent.
 
-
 ## Create the Database Engine
+
+Create the SQL Alchemy database engine. This provides access to the database instance.
 
 ```python
 
@@ -29,6 +31,8 @@ engine = create_engine(CONNECTION_STRING)
 ```
 
 ## Create the ObjectIndex
+
+Next we are going to create an ObjectIndex instance which holds the vector index for our database schema.
 
 ```python
 from sqlalchemy import MetaData
@@ -42,11 +46,8 @@ metadata_obj.reflect(engine)
 db = SQLDatabase(engine)
 table_node_mapping = SQLTableNodeMapping(db)
 
-table_schema_objs = []
-for table_name in metadata_obj.tables.keys():
-    table_schema_objs.append(SQLTableSchema(table_name=table_name))
+table_schema_objs = [SQLTableSchema(table_name=table_name) for table_name in metadata_obj.tables.keys()]
     
-# We dump the table schema information into a vector index. The vector index is stored within the context builder for future use.
 obj_index = ObjectIndex.from_objects(
     table_schema_objs,
     table_node_mapping,
@@ -54,10 +55,14 @@ obj_index = ObjectIndex.from_objects(
 )
 ```
 
+## Setup the Service Context
+
+We'll store the vector index in to the service context so that we can use it in future queries.
+
 ```python
 import os
 
-from llama_index import LLMPredictor, ServiceContext
+from llama_index import ServiceContext
 from langchain.llms import LlamaCpp
 
 model_path = os.path.expanduser("~/ai/models/llama2/llama-2-70b-chat.Q5_K_M.gguf")
@@ -67,14 +72,20 @@ llm = LlamaCpp(
     n_batch=512,
     n_ctx=2048,
     f16_kv=True,
-    temporature=0,
-    n_gqa=8,
-    verbose=True
+    top_p=0.2,
+    verbose=True,
+    model_kwargs={
+        "n_gqa": 8,
+    },
 )
 
-llm_predictor = LLMPredictor(llm=llm)
-service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor)
+service_context = ServiceContext.from_defaults(llm=llm)
 ```
+
+## Create the SQL Query Engine
+
+Setup the query engine with our database, the vector index with our database schema and
+the service context which has our LLM.
 
 ```python
 from llama_index.indices.struct_store import SQLTableRetrieverQueryEngine
@@ -88,6 +99,8 @@ query_engine = SQLTableRetrieverQueryEngine(
     service_context=service_context,
 )
 ```
+
+## Ask some questions
 
 ```python
 from langchain.prompts import PromptTemplate
@@ -105,8 +118,4 @@ response = query_engine.query(template.format(question='How many users have the 
 print(response)
 print(response.metadata['sql_query'])
 print(response.metadata['result'])
-```
-
-```python
-
 ```
